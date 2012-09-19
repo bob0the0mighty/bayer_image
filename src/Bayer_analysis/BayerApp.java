@@ -60,6 +60,7 @@ public class BayerApp extends PApplet {
 			// Draw comparison image
 			println("Greyscale Image created by comparing the smooth image and bayer image. \n"
 					+ "Pixel values go from White for completely different to Black for completely the same.");
+			demosaiced_img.loadPixels();
 			image(demosaiced_img, 0, 0);
 			// save("compared.png");
 			println("Press button to view next image");
@@ -136,9 +137,9 @@ public class BayerApp extends PApplet {
 	}
 	
 	public PImage create_bilinear_img(PImage img_in) {
-		  PImage img = createImage(width, height, RGB);
-		  img.loadPixels();
+		  PImage img = createImage(img_in.width, img_in.height, RGB);
 		  img_in.loadPixels();
+		  img.loadPixels();
 		  for (int x = 1; x < width-1; x++) {
 		    for (int y = 1; y < height-1; y++) {
 		      img.pixels[x + (y*width)] = createCompositeColor(x, y, img_in);
@@ -158,8 +159,8 @@ public class BayerApp extends PApplet {
 		   int b = base & 0xFF;        
 		   int red_count, green_count, blue_count;
 		   
-		   boolean x_interface = (x == 0 || x == img.width ) ? true : false;
-		   boolean y_interface = (y == 0 || y == img.height) ? true : false;
+		   boolean x_interface = (x == 0 || x == img.width ) ? true : false; //either left or right side
+		   boolean y_interface = (y == 0 || y == img.height) ? true : false; //top or bottom
 		   int interfaceNeg = ((x_interface) ? 1 : 0) - ((y_interface) ? 1 : 0);;
 		   
 		   //decides what color the center pixel is
@@ -194,11 +195,11 @@ public class BayerApp extends PApplet {
 		   
 		   //averages color out
 		   if(red_count > 0)
-			   r = (int) (r / red_count);
+			   r = 10 + (int) (r / red_count);
 		   if(green_count > 0)
-			   g = (int) (g / green_count);
+			   g = 10 + (int) (g / green_count);
 		   if(blue_count > 0)
-			   b = (int) (b / blue_count);
+			   b = 10 + (int) (b / blue_count);
 		   
 		   return this.color(r,g,b);
 		}
