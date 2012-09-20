@@ -7,7 +7,7 @@ import processing.core.*;
 @SuppressWarnings("serial")
 public class BayerApp extends PApplet {
 
-	PImage smooth_img, bayer_img, compared_img, demosaiced_img;
+	PImage smooth_img, bayer_img, compared_img, demosaiced_img, real_img;
 	int key_count;
 	String next = "Press button to view next image";
 
@@ -20,9 +20,11 @@ public class BayerApp extends PApplet {
 		// int key_count = 0;
 		// create color image, bayer_img, compared_img
 		smooth_img = create_smooth_img();
-		bayer_img = create_bayer_img();
+		bayer_img = create_bayer_img(smooth_img);
 		compared_img = create_compared_img(smooth_img, bayer_img);
 		demosaiced_img = create_bilinear_img(bayer_img);
+		real_img = loadImage("../wedding.jpg");
+		
 		noLoop();
 	}
 
@@ -75,7 +77,28 @@ public class BayerApp extends PApplet {
 			compared_img = create_compared_img(bayer_img, demosaiced_img);
 			image(compared_img, 0, 0);
 			// save("compared.png");
-			println("Press button to view first image");
+			println(next);
+			break;
+		case 6: 
+			// Draw comparison image
+			println("Pic from my wedding.");
+			image(real_img, 0, 0);
+			// save("compared.png");
+			println(next);
+			break;
+		case 7: 
+			// Draw comparison image
+			println("Bayer Image of my wedding.");
+			image(create_bayer_img(real_img), 0, 0);
+			// save("compared.png");
+			println(next);
+			break;
+		case 8: 
+			// Draw comparison image
+			println("Interpolated Image of my bayer wedding.");
+			image(create_bilinear_img(create_bayer_img(real_img)), 0, 0);
+			// save("compared.png");
+			println("First");
 			break;
 		}
 	}
@@ -90,17 +113,15 @@ public class BayerApp extends PApplet {
 		return img;
 	}
 
-	public PImage create_bayer_img() {
-		PImage img = createImage(width, height, RGB);
+	public PImage create_bayer_img(PImage img_in) {
+		PImage img = createImage(img_in.width, img_in.height, RGB);
 		int c;
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				if (y % 2 == 0) { // if 0 or even row, blue then green
-					c = (x % 2 == 0) ? color(0, 0, (x + y) % 256) : color(0,
-							y % 256, 0);// blue if x is 0 or even, green otherwise
+					c = (x % 2 == 0) ? color(0, 0, (int)blue(img_in.get(x, y))) : color(0, (int)green(img_in.get(x, y)), 0);// blue if x is 0 or even, green otherwise
 				} else { // else red green row
-					c = (x % 2 == 0) ? color(0, y % 256, 0) : color(x % 256, 0,
-							0);// green if x is 0 or even, red otherwise
+					c = (x % 2 == 1) ? color((int)red(img_in.get(x, y)), 0, 0) : color(0, (int)green(img_in.get(x, y)), 0);// green if x is 0 or even, red otherwise
 				}
 				img.set(x, y, c);
 			}
@@ -120,7 +141,7 @@ public class BayerApp extends PApplet {
 				green_dif = (int) (green(color1) - green(color2));
 				blue_dif = (int) (blue(color1) - blue(color2));
 				dif = (int) (red_dif + green_dif + blue_dif) / 3;
-				img.set(x, y, color((dif > 255) ? 255 : dif));
+				img.set(x, y, color(dif));
 			}
 		}
 		return img;
@@ -196,7 +217,7 @@ public class BayerApp extends PApplet {
 	}
 
 	public void keyPressed() {
-		key_count = (key_count + 1) % 6;
+		key_count = (key_count + 1) % 9;
 		redraw();
 	}
 }
